@@ -3,6 +3,8 @@ package com.example.kotov_majorov_stadnichenko_samost;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
+import android.content.Intent;
+import android.content.pm.LabeledIntent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -19,9 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    int sum = 0;
-    TextView sumInCart;
-    Button btnAdd, btnClear, btnOrder;
+
+    Button btnAdd, btnClear, btnShop;
     EditText etName, etPrice;
     DBHelper dbHelper;
     SQLiteDatabase database;
@@ -30,8 +31,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        sumInCart = findViewById(R.id.sumInCart);
 
         etName = (EditText) findViewById(R.id.etName);
         etPrice = (EditText) findViewById(R.id.etPrice);
@@ -42,8 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnClear = (Button) findViewById(R.id.btnClear);
         btnClear.setOnClickListener(this);
 
-        btnOrder = (Button) findViewById(R.id.btnOrder);
-        btnOrder.setOnClickListener(this);
+        btnShop = (Button) findViewById(R.id.btnShop);
+        btnShop.setOnClickListener(this);
 
         dbHelper = new DBHelper(this);
 
@@ -85,15 +84,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 outputPrice.setText(cursor.getString(priceIndex));
                 dbOutputRow.addView(outputPrice);
 
-                Button btnToCart = new Button(this);
-                btnToCart.setOnClickListener(this);
-                params.weight = 1.0f;
-                btnToCart.setLayoutParams(params);
-                btnToCart.setText("Добавить в корзину");
-                btnToCart.setTag("cart");
-                btnToCart.setId(cursor.getInt(idIndex));
-                dbOutputRow.addView(btnToCart);
-
                 Button buttonDelete = new Button(this);
                 buttonDelete.setOnClickListener(this);
                 params.weight = 1.0f;
@@ -112,11 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cursor.close();
     }
 
-    public void ChangeSum(int sumToAdd)
-    {
-        sum = sum + sumToAdd;
-        sumInCart.setText("Сумма заказа: "  + sum);
-    }
+
 
     @Override
     public void onClick(View v) {
@@ -138,13 +124,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 dbOutput.removeAllViews();
                 UpdateTable();
                 break;
-            case R.id.btnOrder:
-                Toast toast = new Toast(getApplicationContext());
-                toast.setGravity(Gravity.CENTER, 0, 0);
-                toast.setDuration(Toast.LENGTH_LONG);
-                toast.setText("Заказ на сумму " + sum + " составлен.");
-                toast.show();
-                ChangeSum(-sum);
+            case R.id.btnShop:
+                Intent intent = new Intent(this, Shop.class);
+                startActivity(intent);
                 break;
             default:
                 if(v.getTag() == "delete") {
@@ -179,14 +161,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         UpdateTable();
                     }
                 }
-                else
-                {
-                    Cursor cursorUpdater = database.query(DBHelper.TABLE_CONTACTS, null, null, null, null, null, null);
-                    cursorUpdater.move(v.getId());
-                    int priceIndex = cursorUpdater.getColumnIndex(DBHelper.KEY_PRICE);
-                    String priceKek = cursorUpdater.getString(priceIndex);
-                    ChangeSum(Integer.parseInt(priceKek));
-                }
+
             break;
         }
     }
