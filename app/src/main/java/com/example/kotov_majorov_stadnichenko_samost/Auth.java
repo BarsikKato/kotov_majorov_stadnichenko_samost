@@ -36,10 +36,10 @@ public class Auth extends AppCompatActivity implements View.OnClickListener {
         database = dbHelper.getWritableDatabase();
 
         //Добавление админа в базу для перехода к управлению магазином
-        ContentValues values = new ContentValues();
-        values.put(dbHelper.KEY_USERNAME, "admin");
-        values.put(dbHelper.KEY_PASSWORD, "admin");
-        database.insert(dbHelper.TABLE_USERS, null, values);
+//        ContentValues values = new ContentValues();
+//        values.put(dbHelper.KEY_USERNAME, "admin");
+//        values.put(dbHelper.KEY_PASSWORD, "admin");
+//        database.insert(dbHelper.TABLE_USERS, null, values);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class Auth extends AppCompatActivity implements View.OnClickListener {
                             logged = true;
                             break;
                         }
-                        if(txtUsername.getText().toString().equals(logCursor.getString(IndexUsername)) && txtPassword.getText().toString().equals(logCursor.getString(IndexPassword)))
+                        else if(txtUsername.getText().toString().equals(logCursor.getString(IndexUsername)) && txtPassword.getText().toString().equals(logCursor.getString(IndexPassword)))
                         {
                             startActivity(new Intent(this, Shop.class));
                             logged = true;

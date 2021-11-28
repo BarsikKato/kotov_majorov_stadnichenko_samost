@@ -16,7 +16,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_USERS = "useres";
     public static final String KEY_USERID = "_id";
     public static final String KEY_USERNAME = "username";
-    public static final String KEY_PASSWORD = "price";
+    public static final String KEY_PASSWORD = "password";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
