@@ -7,18 +7,24 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class Auth extends AppCompatActivity implements View.OnClickListener {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class Auth extends AppCompatActivity {
 
     TextView txtUsername, txtPassword;
     Button buttLogin, buttSignIn;
 
-    DBHelper dbHelper;
-    SQLiteDatabase database;
+    //DBHelper dbHelper;
+    //SQLiteDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,78 +34,96 @@ public class Auth extends AppCompatActivity implements View.OnClickListener {
         txtPassword = findViewById(R.id.txtPassword);
 
         buttLogin = findViewById(R.id.buttLogin);
-        buttLogin.setOnClickListener(this);
         buttSignIn = findViewById(R.id.buttSignIn);
-        buttSignIn.setOnClickListener(this);
 
-        dbHelper = new DBHelper(this);
-        database = dbHelper.getWritableDatabase();
+        buttSignIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(TextUtils.isEmpty(txtUsername.getText().toString()) || TextUtils.isEmpty(txtPassword.getText().toString()))
+                {
+                    String message = "All inputs required...";
+                    Toast.makeText(Auth.this, message, Toast.LENGTH_LONG).show();
+                }
+                else {
+                    RegisterRequest registerRequest = new RegisterRequest();
+                    registerRequest.setEmail("zaglushka");
+                    registerRequest.setUsername(txtUsername.getText().toString());
+                    registerRequest.setPassword(txtPassword.getText().toString());
+                    RegisterUser(registerRequest);
+                }
+            }
+        });
 
-        //Добавление админа в базу для перехода к управлению магазином
-        ContentValues values = new ContentValues();
-        values.put(dbHelper.KEY_USERNAME, "admin");
-        values.put(dbHelper.KEY_PASSWORD, "admin");
-        database.insert(dbHelper.TABLE_USERS, null, values);
+        buttLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(TextUtils.isEmpty(txtUsername.getText().toString()) || TextUtils.isEmpty(txtPassword.getText().toString()))
+                {
+                    String message = "All inputs required...";
+                    Toast.makeText(Auth.this, message, Toast.LENGTH_LONG).show();
+                }
+                else{
+                    LoginRequest loginRequest = new LoginRequest();
+                    loginRequest.setUsername(txtUsername.getText().toString());
+                    loginRequest.setPassword(txtPassword.getText().toString());
+
+                    loginUser(loginRequest);
+                }
+            }
+        });
     }
 
-    @Override
-    public void onClick(View view) {
-        switch(view.getId())
-        {
-            case R.id.buttLogin:
-                Cursor logCursor = database.query(dbHelper.TABLE_USERS, null, null, null, null, null, null);
+    public void RegisterUser(RegisterRequest registerRequest)
+    {
+        Call<RegisterResponse> registerResponseCall = ApiClient.getService().registerUsers(registerRequest);
+        registerResponseCall.enqueue(new Callback<RegisterResponse>() {
+            @Override
+            public void onResponse(Call<RegisterResponse> call, Response<RegisterResponse> response) {
+            if(response.isSuccessful())
+            {
+                String message = "Successful";
+                Toast.makeText(Auth.this, message, Toast.LENGTH_LONG).show();
+            }
+            else
+            {
+                String message = "An error occurred";
+                Toast.makeText(Auth.this, message, Toast.LENGTH_LONG).show();
+            }
+            }
 
-                boolean logged = false;
-                if(logCursor.moveToFirst())
-                {
-                    int IndexUsername = logCursor.getColumnIndex(dbHelper.KEY_USERNAME);
-                    int IndexPassword = logCursor.getColumnIndex(dbHelper.KEY_PASSWORD);
-                    do{
-                        if(txtUsername.getText().toString().equals("admin") && txtPassword.getText().toString().equals("admin"))
-                        {
-                            startActivity(new Intent(this, MainActivity.class));
-                            logged = true;
-                            break;
-                        }
-                        if(txtUsername.getText().toString().equals(logCursor.getString(IndexUsername)) && txtPassword.getText().toString().equals(logCursor.getString(IndexPassword)))
-                        {
-                            startActivity(new Intent(this, Shop.class));
-                            logged = true;
-                            break;
-                        }
-                    }while(logCursor.moveToNext());
-                }
-                logCursor.close();
-                if (!logged) Toast.makeText(this, "Введенные логин и пароль не были найдены", Toast.LENGTH_LONG).show();
-                break;
-
-            case R.id.buttSignIn:
-                Cursor signCursor = database.query(dbHelper.TABLE_USERS, null, null, null, null, null, null);
-
-                boolean finded=false;
-                if(signCursor.moveToFirst())
-                {
-                    int IndexUsername = signCursor.getColumnIndex(dbHelper.KEY_USERNAME);
-                    do{
-                        if(txtUsername.getText().toString().equals(signCursor.getString(IndexUsername)))
-                        {
-                            Toast.makeText(this, "Такой логин уже существует", Toast.LENGTH_LONG).show();
-                            finded = true;
-                            break;
-                        }
-                    }while(signCursor.moveToNext());
-                }
-                if(!finded)
-                {
-                    ContentValues values = new ContentValues();
-                    values.put(dbHelper.KEY_USERNAME, txtUsername.getText().toString());
-                    values.put(dbHelper.KEY_PASSWORD, txtPassword.getText().toString());
-
-                    database.insert(dbHelper.TABLE_USERS, null, values);
-                    Toast.makeText(this, "Вы успешно зарегистрировались!", Toast.LENGTH_LONG).show();
-                }
-                signCursor.close();
-                break;
-        }
+            @Override
+            public void onFailure(Call<RegisterResponse> call, Throwable t) {
+                String message = t.getLocalizedMessage();
+                Toast.makeText(Auth.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
+
+    public void loginUser(LoginRequest loginRequest)
+    {
+        Call<LoginResponse> loginResponseCall = ApiClient.getService().loginUser(loginRequest);
+        loginResponseCall.enqueue(new Callback<LoginResponse>() {
+            @Override
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                if(response.isSuccessful())
+                {
+                    LoginResponse loginResponse = response.body();
+                    startActivity(new Intent(Auth.this, MainActivity.class).putExtra("data", loginResponse));
+                    finish();
+                }
+                else
+                {
+                    String message = "An error occurred";
+                    Toast.makeText(Auth.this, message, Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
+                String message = t.getLocalizedMessage();
+                Toast.makeText(Auth.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
 }

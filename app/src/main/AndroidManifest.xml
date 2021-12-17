@@ -10,7 +10,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Kotov_samost">
+        android:theme="@style/Theme.Kotov_samost"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".Auth"
             android:exported="true">
