@@ -8,6 +8,6 @@ public interface UserService {
     @POST("authenticate/")
     Call<LoginResponse> loginUser(@Body LoginRequest loginRequest);
 
-    @POST("users2/")
+    @POST("users/")
     Call<RegisterResponse> registerUsers(@Body RegisterRequest registerRequest);
 }

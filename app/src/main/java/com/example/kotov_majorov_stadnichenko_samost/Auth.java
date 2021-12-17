@@ -20,7 +20,7 @@ import retrofit2.Response;
 
 public class Auth extends AppCompatActivity {
 
-    TextView txtUsername, txtPassword;
+    TextView txtUsername, txtPassword, txtEmail;
     Button buttLogin, buttSignIn;
 
     //DBHelper dbHelper;
@@ -32,6 +32,7 @@ public class Auth extends AppCompatActivity {
         setContentView(R.layout.activity_auth);
         txtUsername = findViewById(R.id.txtUsername);
         txtPassword = findViewById(R.id.txtPassword);
+        txtEmail = findViewById(R.id.txtEmail);
 
         buttLogin = findViewById(R.id.buttLogin);
         buttSignIn = findViewById(R.id.buttSignIn);
@@ -46,7 +47,7 @@ public class Auth extends AppCompatActivity {
                 }
                 else {
                     RegisterRequest registerRequest = new RegisterRequest();
-                    registerRequest.setEmail("zaglushka");
+                    registerRequest.setEmail(txtEmail.getText().toString());
                     registerRequest.setUsername(txtUsername.getText().toString());
                     registerRequest.setPassword(txtPassword.getText().toString());
                     RegisterUser(registerRequest);
@@ -78,7 +79,8 @@ public class Auth extends AppCompatActivity {
         Call<RegisterResponse> registerResponseCall = ApiClient.getService().registerUsers(registerRequest);
         registerResponseCall.enqueue(new Callback<RegisterResponse>() {
             @Override
-            public void onResponse(Call<RegisterResponse> call, Response<RegisterResponse> response) {
+            public void onResponse(Call<RegisterResponse> call, Response<RegisterResponse> response)
+            {
             if(response.isSuccessful())
             {
                 String message = "Successful";
